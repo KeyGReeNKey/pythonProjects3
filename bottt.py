@@ -12,7 +12,8 @@ def start(message):
     marcap.add(types.InlineKeyboardButton('Добавить дело', callback_data='add'))
     marcap.add(types.InlineKeyboardButton('Удалить дело', callback_data='delete'))
     marcap.add(types.InlineKeyboardButton('Вывести дела на сегодня', callback_data='all'))
-    marcap.add(types.InlineKeyboardButton('Закончить все дела на сегодня', callback_data='alldel'))
+    marcap.add(types.InlineKeyboardButton('Закончить все дела на сегодня', callback_data='alldell'))
+    marcap.add(types.InlineKeyboardButton('покажи картинку', callback_data='photo'))
     bot.send_message(message.chat.id, 'Что бы ты хотел сделать?', reply_markup=marcap)
 
 
@@ -21,21 +22,27 @@ def callback_message(callback):
     if callback.data == 'add':
         bot.send_message(callback.message.chat.id, 'Введите дело для добавления:')
         bot.register_next_step_handler(callback.message, add_affair)
-    elif callback.data == 'alldel':
-        bot.register_next_step_handler(callback.message, delete_all_today_from_db)
     elif callback.data == 'delete':
         bot.send_message(callback.message.chat.id, 'Введите ID дела для удаления:')
         bot.register_next_step_handler(callback.message, delete_affair)
+    elif callback.data == 'alldell':
+        delete_all_affairs(callback.message)
     elif callback.data == 'all':
         show_today_affairs(callback.message)
+    elif callback.data == 'photo':
+        bot.send_message(callback.message.chat.id, 'напишите номер картинки:')
+        bot.register_next_step_handler(callback.message, photo)
 
+def photo (message):
+    photo = open('Cold.jpg', 'rb')
+    bot.send_photo(message.chat.id, photo)
 
-def delete_all_today_from_db():
+def delete_all_affairs(message):
     conn = sqlite3.connect('Do_todey.db')
     cur = conn.cursor()
-    cur.execute("DELETE FROM affairs")
+    cur.execute('DELETE FROM affairs')
     conn.commit()
-    conn.close()
+    bot.send_message(message.chat.id, 'Все дела успешно удалены из базы данных.')
 
 
 def add_affair(message):
